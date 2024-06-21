@@ -5,11 +5,12 @@ import hikari
 import datetime
 import base64
 import os
+import json
 
-minecraft = lightbulb.Plugin("minecraft")
+minecraft = lightbulb.Plugin("Minecraft")
 
 @minecraft.command()
-@lightbulb.option(name='username', description='The username of the person you want to get the UUID of.', type=str)
+@lightbulb.option(name='username', description='The username of the person you want to get the UUID of.', type=str, required=True)
 @lightbulb.command('nametouuid', 'This will return the UUID of a Minecraft name')
 @lightbulb.implements(lightbulb.SlashCommand)
 async def command(ctx: lightbulb.Context) -> None:
@@ -30,7 +31,7 @@ async def command(ctx: lightbulb.Context) -> None:
         await ctx.respond(f"Error: {response.text}")
         
 @minecraft.command()
-@lightbulb.option(name='username', description='The nickname of the player to get the skin from.', type=str)
+@lightbulb.option(name='username', description='The nickname of the player to get the skin from.', type=str, required=True)
 @lightbulb.command('skin', 'This will return the skin of a Minecraft player!')
 @lightbulb.implements(lightbulb.SlashCommand)
 async def command(ctx: lightbulb.Context) -> None:
@@ -53,7 +54,7 @@ async def command(ctx: lightbulb.Context) -> None:
         await ctx.respond(f'{data['Error']['errorMessage']}')
         
 @minecraft.command()
-@lightbulb.option(name='server', description='Server to get status from.', type=str)
+@lightbulb.option(name='server', description='Server to get status from.', type=str, required=True)
 @lightbulb.command('server', 'Get the status of a minecraft server.')
 @lightbulb.implements(lightbulb.SlashCommand)
 async def command(ctx: lightbulb.Context) -> None:   
@@ -91,6 +92,26 @@ async def command(ctx: lightbulb.Context) -> None:
             
         else:
             await ctx.respond(online)
+            
+
+@minecraft.command()
+@lightbulb.option(name='user', description='The user to get the information from.', type=str, required=True)
+@lightbulb.command('hypixel', 'Get the information about a hypixel player.')
+@lightbulb.implements(lightbulb.SlashCommand)
+async def command(ctx: lightbulb.Context) -> None:  
+    
+    with open('info.json') as f:
+        hypixel_api = json.load(f)['hypixel-api']
+                
+    player = ctx.options.user
+    
+    data = requests.get(
+        url='https://api.hypixel.net/v2/player',
+        params={
+            "key": hypixel_api,
+            "name": player
+        }
+        ).json()
 
 def load(bot: lightbulb.BotApp) -> None:
     bot.add_plugin(minecraft)
